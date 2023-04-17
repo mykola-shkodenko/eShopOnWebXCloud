@@ -20,7 +20,8 @@ public static class ConfigureCoreServices
         services.AddScoped<IBasketQueryService, BasketQueryService>();
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();
-        services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings));
+        var orderSettings = configuration.Get<OrderSettings>() ?? new OrderSettings();
+        services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings, orderSettings));
 
         services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
         services.AddTransient<IEmailSender, EmailSender>();

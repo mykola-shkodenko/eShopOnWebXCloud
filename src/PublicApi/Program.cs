@@ -41,7 +41,8 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 builder.Services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 builder.Services.Configure<CatalogSettings>(builder.Configuration);
 var catalogSettings = builder.Configuration.Get<CatalogSettings>() ?? new CatalogSettings();
-builder.Services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings));
+var orderSettings = builder.Configuration.Get<OrderSettings>() ?? new OrderSettings();
+builder.Services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings, orderSettings));
 builder.Services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
 builder.Services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
 

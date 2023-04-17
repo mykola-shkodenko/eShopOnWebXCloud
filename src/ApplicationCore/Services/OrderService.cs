@@ -1,4 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
@@ -13,16 +19,19 @@ public class OrderService : IOrderService
 {
     private readonly IRepository<Order> _orderRepository;
     private readonly IUriComposer _uriComposer;
+    private readonly IAppLogger<BasketService> _logger;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
 
     public OrderService(IRepository<Basket> basketRepository,
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
-        IUriComposer uriComposer)
+        IUriComposer uriComposer,
+        IAppLogger<BasketService> logger)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
+        _logger = logger;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
     }
@@ -49,5 +58,26 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         await _orderRepository.AddAsync(order);
+
+        await PostOrderAsync(order);
+    }
+
+    private async Task PostOrderAsync(Order order)
+    {
+        var jsonContent = JsonSerializer.Serialize(new { 
+            OrderId = order.Id,
+            OrderItems = order.OrderItems.Select(item => 
+                new { 
+                    ItemId = item.Id,
+                    Quantity = item.Units })
+            .ToArray() 
+        });
+        var content = new StringContent(jsonContent, Encoding.UTF8, MediaTypeNames.Application.Json);
+        var httpClient = new HttpClient();
+        var result = await httpClient.PostAsync(_uriComposer.OrderReserverUri, content);
+        if (!result.IsSuccessStatusCode)
+            throw new Exception($"Order '{order.Id}' was posted with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
+
+        _logger.LogInformation($"Order '{order.Id}' has been send to OrderReserver service");
     }
 }

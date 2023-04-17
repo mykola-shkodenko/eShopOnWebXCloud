@@ -41,6 +41,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorShared", "src\BlazorS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublicApiIntegrationTests", "tests\PublicApiIntegrationTests\PublicApiIntegrationTests.csproj", "{D53EF010-8F8C-4337-A059-456E19D8AE63}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureFunctions", "src\AzureFunctions\AzureFunctions.csproj", "{D29A8A62-892A-4128-A490-346E2579A4C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{D53EF010-8F8C-4337-A059-456E19D8AE63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D53EF010-8F8C-4337-A059-456E19D8AE63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D53EF010-8F8C-4337-A059-456E19D8AE63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D29A8A62-892A-4128-A490-346E2579A4C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D29A8A62-892A-4128-A490-346E2579A4C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D29A8A62-892A-4128-A490-346E2579A4C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D29A8A62-892A-4128-A490-346E2579A4C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +112,7 @@ Global
 		{71368733-80A4-4869-B215-3A7001878577} = {419A6ACE-0419-4315-A6FB-B0E63D39432E}
 		{715CF7AF-A1EE-40A6-94A0-8DA3F3B2CAE9} = {419A6ACE-0419-4315-A6FB-B0E63D39432E}
 		{D53EF010-8F8C-4337-A059-456E19D8AE63} = {15EA4737-125B-4E6E-A806-E13B7EBCDCCF}
+		{D29A8A62-892A-4128-A490-346E2579A4C5} = {419A6ACE-0419-4315-A6FB-B0E63D39432E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {49813262-5DA3-4D61-ABD3-493C74CE8C2B}
