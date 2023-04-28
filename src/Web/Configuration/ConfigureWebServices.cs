@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using Microsoft.eShopWeb.ApplicationCore;
+using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Web.Interfaces;
 using Microsoft.eShopWeb.Web.Services;
 
@@ -14,7 +16,12 @@ public static class ConfigureWebServices
         services.AddScoped<CatalogViewModelService>();
         services.AddScoped<ICatalogItemViewModelService, CatalogItemViewModelService>();
         services.Configure<CatalogSettings>(configuration);
-        services.Configure<OrderSettings>(configuration);
+
+        /*var featuresSection = configuration.GetRequiredSection(FeaturesConfiguration.CONFIG_NAME);
+        services.Configure<FeaturesConfiguration>(featuresSection);
+        var featuresConfiguration = configuration.Get<FeaturesConfiguration>() ?? new FeaturesConfiguration();
+        services.AddSingleton<IFeatureProvider>(new FeatureProvider(featuresConfiguration));*/
+
         services.AddScoped<ICatalogViewModelService, CachedCatalogViewModelService>();
 
         return services;

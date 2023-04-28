@@ -2,7 +2,5 @@
 
 public interface IUriComposer
 {    
-    string ComposePicUri(string uriTemplate);
-
-    string OrderReserverUri { get; }
+    string ComposePicUri(string uriTemplate);    
 }

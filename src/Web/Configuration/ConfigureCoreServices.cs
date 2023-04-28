@@ -1,4 +1,5 @@
-﻿using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+﻿using Microsoft.eShopWeb.ApplicationCore;
+using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Data.Queries;
@@ -20,8 +21,11 @@ public static class ConfigureCoreServices
         services.AddScoped<IBasketQueryService, BasketQueryService>();
 
         var catalogSettings = configuration.Get<CatalogSettings>() ?? new CatalogSettings();
-        var orderSettings = configuration.Get<OrderSettings>() ?? new OrderSettings();
-        services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings, orderSettings));
+        services.AddSingleton<IUriComposer>(new UriComposer(catalogSettings));
+
+        var featuresSection = configuration.GetRequiredSection(FeaturesConfiguration.CONFIG_NAME);
+        services.Configure<FeaturesConfiguration>(featuresSection);
+        services.AddSingleton<IFeatureProvider, FeatureProvider>();
 
         services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
         services.AddTransient<IEmailSender, EmailSender>();

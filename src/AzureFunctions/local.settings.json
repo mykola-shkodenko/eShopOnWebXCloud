@@ -3,6 +3,9 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "ORDERS_CONTAINER_URL": "https://127.0.0.1:10000/devstoreaccount1/orders"
+    "ORDERS_CONTAINER_URL": "https://127.0.0.1:10000/devstoreaccount1/orders",
+    "COSMOS_ENDPOINT": "",
+    "COSMOS_DATABASE": "eShopOnWebDb",
+    "COSMOS_ORDERS_CONTAINER": "orders"
   }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -20,18 +19,22 @@ public class OrderService : IOrderService
     private readonly IRepository<Order> _orderRepository;
     private readonly IUriComposer _uriComposer;
     private readonly IAppLogger<BasketService> _logger;
+    private readonly IFeatureProvider _featureProvider;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
 
-    public OrderService(IRepository<Basket> basketRepository,
+    public OrderService(
+        IRepository<Basket> basketRepository,
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
         IUriComposer uriComposer,
-        IAppLogger<BasketService> logger)
+        IAppLogger<BasketService> logger,
+        IFeatureProvider featureProvider)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _logger = logger;
+        _featureProvider = featureProvider;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
     }
@@ -59,25 +62,81 @@ public class OrderService : IOrderService
 
         await _orderRepository.AddAsync(order);
 
-        await PostOrderAsync(order);
+        _logger.LogInformation("OrderDeliveryEnabled:" + _featureProvider.IsOrderDeliveryEnabled);
+        _logger.LogInformation("OrderDeliveryUrl:" + _featureProvider.OrderDeliveryUri);
+        _logger.LogInformation("OrderReserveEnabled:" + _featureProvider.IsOrderReserverEnabled);
+        _logger.LogInformation("OrderReserveUrl:" + _featureProvider.OrderReserverUri);
+
+        await ReserveOrderAsync(order);
+
+        await DeliverOrderAsync(order);
     }
 
-    private async Task PostOrderAsync(Order order)
+    private async Task ReserveOrderAsync(Order order)
     {
-        var jsonContent = JsonSerializer.Serialize(new { 
+        if (!_featureProvider.IsOrderReserverEnabled)
+        {
+            _logger.LogWarning("Order reservation is disabled");
+            return;
+        }
+        var body = new
+        {
             OrderId = order.Id,
-            OrderItems = order.OrderItems.Select(item => 
-                new { 
+            OrderItems = order.OrderItems.Select(item =>
+                new
+                {
                     ItemId = item.Id,
-                    Quantity = item.Units })
-            .ToArray() 
-        });
-        var content = new StringContent(jsonContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-        var httpClient = new HttpClient();
-        var result = await httpClient.PostAsync(_uriComposer.OrderReserverUri, content);
+                    Quantity = item.Units
+                }).ToArray()
+        };
+        HttpResponseMessage result = await PostAsync(_featureProvider.OrderReserverUri, body);
         if (!result.IsSuccessStatusCode)
-            throw new Exception($"Order '{order.Id}' was posted with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
+            throw new Exception($"Order '{order.Id}' was reserved with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
 
-        _logger.LogInformation($"Order '{order.Id}' has been send to OrderReserver service");
+        _logger.LogInformation($"Order '{order.Id}' has been send to order reservation service");
+    }
+
+    
+
+    private async Task DeliverOrderAsync(Order order)
+    {
+        if (!_featureProvider.IsOrderDeliveryEnabled)
+        {
+            _logger.LogWarning("Order delivery is disabled");
+            return;
+        }
+
+        var body = new
+        {
+            OrderId = order.Id,
+            FinalPrice = order.OrderItems.Sum(i => i.Units * i.UnitPrice),
+            OrderItems = order.OrderItems.Select(item =>
+                new {
+                    ItemId = item.Id,
+                    ItemPrice = item.UnitPrice,
+                    Quantity = item.Units
+                }).ToArray(),
+            ShippingAddress = new
+            {
+                order.ShipToAddress.Country,
+                order.ShipToAddress.State,
+                order.ShipToAddress.City,
+                order.ShipToAddress.Street,
+                order.ShipToAddress.ZipCode
+            }
+        };
+        var result = await PostAsync(_featureProvider.OrderDeliveryUri, body);
+        if (!result.IsSuccessStatusCode)
+            throw new Exception($"Order '{order.Id}' was delivered with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
+
+        _logger.LogInformation($"Order '{order.Id}' has been send to order delivery service");
+    }
+
+    private static async Task<HttpResponseMessage> PostAsync(string uri, object body)
+    {
+        var json = JsonSerializer.Serialize(body);
+        var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
+        var httpClient = new HttpClient();
+        return await httpClient.PostAsync(uri, stringContent);
     }
 }
