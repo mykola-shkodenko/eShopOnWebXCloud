@@ -6,6 +6,7 @@
     "ORDERS_CONTAINER_URL": "https://127.0.0.1:10000/devstoreaccount1/orders",
     "COSMOS_ENDPOINT": "",
     "COSMOS_DATABASE": "eShopOnWebDb",
-    "COSMOS_ORDERS_CONTAINER": "orders"
+    "COSMOS_ORDERS_CONTAINER": "orders",
+    "EVENTGRID_ORDER_FAILED_TOPIC_ENDPOINT": ""
   }
 }

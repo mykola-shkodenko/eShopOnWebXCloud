@@ -1,11 +1,15 @@
 {
     "version": "2.0",
-    "logging": {
-        "applicationInsights": {
-            "samplingSettings": {
-                "isEnabled": true,
-                "excludedTypes": "Request"
-            }
-        }
+  "logging": {
+    "logLevel": {
+      "Microsoft.eShopWeb": "Trace",
+      "default": "Information"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
     }
+  }
 }

@@ -3,7 +3,7 @@
 public interface IFeatureProvider
 {
     bool IsOrderReserverEnabled { get; }
-    string OrderReserverUri { get; }
+    string OrderReserverTopicEndpoint { get; }
     bool IsOrderDeliveryEnabled { get; }
     string OrderDeliveryUri { get; }
 }

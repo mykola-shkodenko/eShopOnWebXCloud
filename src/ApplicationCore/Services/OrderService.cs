@@ -20,6 +20,7 @@ public class OrderService : IOrderService
     private readonly IUriComposer _uriComposer;
     private readonly IAppLogger<BasketService> _logger;
     private readonly IFeatureProvider _featureProvider;
+    private readonly IOrderReserver _orderReserver;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
 
@@ -29,12 +30,14 @@ public class OrderService : IOrderService
         IRepository<Order> orderRepository,
         IUriComposer uriComposer,
         IAppLogger<BasketService> logger,
-        IFeatureProvider featureProvider)
+        IFeatureProvider featureProvider,
+        IOrderReserver orderReserver)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _logger = logger;
         _featureProvider = featureProvider;
+        _orderReserver = orderReserver;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
     }
@@ -60,43 +63,12 @@ public class OrderService : IOrderService
 
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
-        await _orderRepository.AddAsync(order);
+        await _orderRepository.AddAsync(order);        
 
-        _logger.LogInformation("OrderDeliveryEnabled:" + _featureProvider.IsOrderDeliveryEnabled);
-        _logger.LogInformation("OrderDeliveryUrl:" + _featureProvider.OrderDeliveryUri);
-        _logger.LogInformation("OrderReserveEnabled:" + _featureProvider.IsOrderReserverEnabled);
-        _logger.LogInformation("OrderReserveUrl:" + _featureProvider.OrderReserverUri);
-
-        await ReserveOrderAsync(order);
+        await _orderReserver.ReserveAsync(order);
 
         await DeliverOrderAsync(order);
     }
-
-    private async Task ReserveOrderAsync(Order order)
-    {
-        if (!_featureProvider.IsOrderReserverEnabled)
-        {
-            _logger.LogWarning("Order reservation is disabled");
-            return;
-        }
-        var body = new
-        {
-            OrderId = order.Id,
-            OrderItems = order.OrderItems.Select(item =>
-                new
-                {
-                    ItemId = item.Id,
-                    Quantity = item.Units
-                }).ToArray()
-        };
-        HttpResponseMessage result = await PostAsync(_featureProvider.OrderReserverUri, body);
-        if (!result.IsSuccessStatusCode)
-            throw new Exception($"Order '{order.Id}' was reserved with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
-
-        _logger.LogInformation($"Order '{order.Id}' has been send to order reservation service");
-    }
-
-    
 
     private async Task DeliverOrderAsync(Order order)
     {

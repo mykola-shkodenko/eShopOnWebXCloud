@@ -8,11 +8,14 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Azure.Messaging.EventGrid" />
     <PackageReference Include="Azure.Storage.Blobs" />
     <PackageReference Include="Microsoft.Azure.Cosmos" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.EventGrid" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
+    <PackageReference Include="Polly" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

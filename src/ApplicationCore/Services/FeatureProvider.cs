@@ -14,7 +14,7 @@ public class FeatureProvider : IFeatureProvider
     }
 
     public bool IsOrderReserverEnabled => _featuresConfiguration.OrderReserveEnabled;
-    public string OrderReserverUri => GetRequiredUri(_featuresConfiguration.OrderReserveUrl, nameof(FeaturesConfiguration.OrderReserveUrl));
+    public string OrderReserverTopicEndpoint => GetRequiredUri(_featuresConfiguration.OrderReserveTopicEnpoint, nameof(FeaturesConfiguration.OrderReserveTopicEnpoint));
 
     public bool IsOrderDeliveryEnabled => _featuresConfiguration.OrderDeliveryEnabled;
     public string OrderDeliveryUri => GetRequiredUri(_featuresConfiguration.OrderDeliveryUrl, nameof(FeaturesConfiguration.OrderDeliveryUrl));

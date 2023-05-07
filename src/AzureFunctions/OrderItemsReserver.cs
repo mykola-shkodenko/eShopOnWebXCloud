@@ -1,11 +1,12 @@
-﻿using System.Net;
-using System.Net.Mime;
-using System.Text.Json;
+﻿using System.Text.Json;
+using Azure.Core.Serialization;
 using Azure.Identity;
+using Azure.Messaging.EventGrid;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Retry;
 
 namespace Microsoft.eShopWeb.AzureFunctions;
 
@@ -19,56 +20,103 @@ public class OrderItemsReserver
     }
 
     [Function(nameof(OrderItemsReserver))]
-    public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req)
+    public async Task Run([EventGridTrigger()] EventGridEvent @event)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        _logger.LogInformation("C# EventGrid trigger function processed a request.");
 
-        var reservedOrderItems = await System.Text.Json.JsonSerializer.DeserializeAsync<ReservedOrder>(req.Body);
+        _logger.LogInformation($"Event: {JsonSerializer.Serialize(@event)} Data: {@event.Data?.ToString()}");
 
-        HttpResponseData response;
-        if (reservedOrderItems is null)
+        if (@event.Data is null)
         {
-            response = req.CreateResponse(HttpStatusCode.NoContent);
-            response.WriteString($"Request has not valid body");
+            throw new NullReferenceException("Event data is null");
         }
-        else
+        var data = @event.Data.ToObjectFromJson<ReservedOrder>(new JsonSerializerOptions()
         {
-            await CreateBlocbAsync(reservedOrderItems);
-
-            response = req.CreateResponse(HttpStatusCode.OK);
-            response.WriteString($"OrderId is {reservedOrderItems.OrderId} and contains {reservedOrderItems.OrderItems?.Count()} item(s)");
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+        if (data is null)
+        {
+            throw new NullReferenceException("Deserialized event data is null");
         }
-        response.Headers.Add("Content-Type", $"{MediaTypeNames.Text.Plain}; charset=utf-8" );        
-        return response;
+        
+        await CreateBlobWithRetryAsync(data);
+
+        _logger.LogInformation($"Order {data.OrderId} has been reserved successfully");
     }
 
-    private async Task CreateBlocbAsync(ReservedOrder order)
+    private async Task CreateBlobWithRetryAsync(ReservedOrder order)
     {
-        var containerStorageUrl = GetVariable("ORDERS_CONTAINER_URL");
+        try
+        {
+            string blobName = $"Order_{order.OrderId}_{order.OrderItems?.Count()}_{order.OrderItems?.Sum(i => i.Quantity)}.json";
 
-        var containerClient = new BlobContainerClient(new Uri(containerStorageUrl), new DefaultAzureCredential());
-               
-        await containerClient.CreateIfNotExistsAsync();
+            var containerStorageUrl = GetVariable("ORDERS_CONTAINER_URL");
 
-        string blobName = $"Order_{order.OrderId}_{order.OrderItems?.Count()}_{order.OrderItems?.Sum(i => i.Quantity)}.json";
+            var options = new BlobClientOptions();
+            options.Retry.MaxDelay = TimeSpan.FromSeconds(4);
+            options.Retry.MaxRetries = 2;
+            var containerClient = new BlobContainerClient(new Uri(containerStorageUrl), new DefaultAzureCredential(), options);
 
-        var blobClient = containerClient.GetBlobClient(blobName);
+            await containerClient.CreateIfNotExistsAsync();
 
-        using var memoryStream = new MemoryStream();
-        await JsonSerializer.SerializeAsync(memoryStream, order.OrderItems);
-        memoryStream.Position = 0;
-        await blobClient.UploadAsync(memoryStream);
+            var blobClient = containerClient.GetBlobClient(blobName);
 
-        _logger.LogInformation($"Blob '{blobName}' has been uploaded to container '{containerClient.Name}'");
+            using var memoryStream = new MemoryStream();
+            await JsonSerializer.SerializeAsync(memoryStream, order.OrderItems);
+            memoryStream.Position = 0;
+            await blobClient.UploadAsync(memoryStream);
+
+            _logger.LogInformation($"Blob '{blobName}' has been uploaded to container '{containerClient.Name}'");
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, $"Order blob was not created for reason: {ex.Message}");
+
+            await SendOrderFailedEventAsync(order);
+        }
+    }
+
+    private async Task SendOrderFailedEventAsync(ReservedOrder order)
+    {
+        EventGridPublisherClient client = new EventGridPublisherClient(
+                        new Uri(GetVariable("EVENTGRID_ORDER_FAILED_TOPIC_ENDPOINT")),
+                        new DefaultAzureCredential());
+
+        // Example of a custom ObjectSerializer used to serialize the event payload to JSON
+        var customSerializer = new JsonObjectSerializer(new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        // Add EventGridEvents to a list to publish to the topic
+        List<EventGridEvent> eventsList = new List<EventGridEvent>
+            {
+                new OrderFailedEvent(
+                    "microsoft/eshopwebxcloud/order/failed",
+                    await customSerializer.SerializeAsync(order)),
+            };
+
+        // Send the events
+        await client.SendEventsAsync(eventsList);
+
+        _logger.LogInformation($"Event for failed order {order.OrderId} has been send");
+    }
+    
+    internal class OrderFailedEvent : EventGridEvent
+    {
+        public OrderFailedEvent(string subject, BinaryData data)
+            : base(subject, nameof(OrderFailedEvent), "1.0", data)
+        {
+        }
     }
 
     private static string GetVariable(string key) => Environment.GetEnvironmentVariable(key)!;
 
-    internal class ReservedOrder
+    public class ReservedOrder
     {
         public int OrderId { get; set; }
         public IEnumerable<OrderItem>? OrderItems { get; set; }
     }
 
-    internal record OrderItem(int ItemId, int Quantity);
+    public record OrderItem(int ItemId, int Quantity);
 }

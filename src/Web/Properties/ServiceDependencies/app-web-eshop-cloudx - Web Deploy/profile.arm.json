@@ -7,7 +7,7 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "rg-databases-eus",
+      "defaultValue": "rg-events-eus",
       "metadata": {
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
       }
@@ -21,7 +21,7 @@
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "app-publicapi-eshop-cloudx-eus",
+      "defaultValue": "app-web-eshop-cloudx",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }
