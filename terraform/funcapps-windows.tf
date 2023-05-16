@@ -48,3 +48,11 @@ resource "azurerm_windows_function_app" "func-app" {
     EVENTGRID_ORDER_FAILED_TOPIC_ENDPOINT = "${azurerm_eventgrid_topic.evgt-failed.endpoint}"
   }
 }
+
+# ----------- Role assignments -----------
+
+resource "azurerm_role_assignment" "ars-evgt-failed-func-app" {
+  scope                = azurerm_eventgrid_topic.evgt-failed.id
+  role_definition_name = "EventGrid Data Sender"
+  principal_id         = azurerm_windows_function_app.func-app.identity[0].principal_id
+}

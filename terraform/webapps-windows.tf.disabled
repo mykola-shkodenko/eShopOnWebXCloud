@@ -1,3 +1,12 @@
+# Create application service plan
+resource "azurerm_service_plan" "asp-web" {
+  name                = "asp-eshop-cloudx"
+  resource_group_name = azurerm_resource_group.rg-cloudx.name
+  location            = azurerm_resource_group.rg-cloudx.location
+  sku_name            = "F1"
+  os_type             = "Windows"
+}
+
 # ----------- Public API -----------
 # Create application insights for PublicAPI
 resource "azurerm_application_insights" "appi-publicapi" {
@@ -108,4 +117,66 @@ resource "azurerm_windows_web_app" "app-web" {
       file_system_level = "Information"
     }
   }
+}
+
+# ----------- Public API Access Policy & Role Assignments -----------
+data "azuread_service_principal" "asp-windows-publicapi" {
+  display_name = azurerm_windows_web_app.app-publicapi.name
+  depends_on = [
+    azurerm_windows_web_app.app-publicapi
+  ]
+}
+resource "azurerm_key_vault_access_policy" "kvap-publicapi" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azuread_service_principal.asp-windows-publicapi.object_id
+
+  secret_permissions = [
+    "Get",
+    "List"
+  ]
+
+  certificate_permissions = [
+    "Get",
+    "List"
+  ]
+
+  key_permissions = [
+    "Get",
+    "List"
+  ]
+}
+
+# ----------- Web Access Policy & Role Assignments -----------
+data "azuread_service_principal" "asp-windows-web" {
+  display_name = azurerm_windows_web_app.app-web.name
+  depends_on = [
+    azurerm_windows_web_app.app-web
+  ]
+}
+resource "azurerm_key_vault_access_policy" "kvap-web" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azuread_service_principal.asp-windows-web.object_id
+
+  secret_permissions = [
+    "Get",
+    "List"
+  ]
+
+  certificate_permissions = [
+    "Get",
+    "List"
+  ]
+
+  key_permissions = [
+    "Get",
+    "List"
+  ]
+}
+
+resource "azurerm_role_assignment" "ars-evgt-reserved-web-app" {
+  scope                = azurerm_eventgrid_topic.evgt-reserved.id
+  role_definition_name = "EventGrid Data Sender"
+  principal_id         = azurerm_windows_web_app.app-web.identity[0].principal_id
 }
