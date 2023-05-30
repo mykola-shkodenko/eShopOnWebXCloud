@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+﻿/*using System.Text.Json;
 using Azure.Core.Serialization;
 using Azure.Identity;
 using Azure.Messaging.EventGrid;
@@ -120,3 +120,4 @@ public class OrderItemsReserver
 
     public record OrderItem(int ItemId, int Quantity);
 }
+*/

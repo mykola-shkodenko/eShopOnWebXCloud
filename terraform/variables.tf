@@ -30,3 +30,11 @@ variable "sql_admin_pass" {
   type    = string
   default = "@someThingComplicated1234"
 }
+variable "cosmos_db_name" {
+  type    = string
+  default = "eShopOnWebDb"
+}
+variable "cosmos_container_name_orders" {
+  type    = string
+  default = "orders"
+}

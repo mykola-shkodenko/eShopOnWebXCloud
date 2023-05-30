@@ -39,6 +39,7 @@ public static class Dependencies
                 options.UseSqlServer(configuration.GetConnectionString("IdentityConnection")));
         }
 
-        services.AddTransient<IOrderReserver, EventGridOrderReserver>();
+        services.AddTransient<IOrderReserver, ServiceBusOrderReserver>();
+        //services.AddTransient<IOrderReserver, EventGridOrderReserver>();
     }
 }

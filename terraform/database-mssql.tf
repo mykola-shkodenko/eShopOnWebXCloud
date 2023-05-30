@@ -1,8 +1,8 @@
 # ----------- Database MS SQL -----------
 resource "azurerm_mssql_server" "sql-server" {
   name                         = "sql-eshop-cloudx"
-  resource_group_name          = azurerm_resource_group.rg-cloudx.name
-  location                     = azurerm_resource_group.rg-cloudx.location
+  resource_group_name          = azurerm_resource_group.this.name
+  location                     = azurerm_resource_group.this.location
   version                      = "12.0"
   administrator_login          = var.sql_admin
   administrator_login_password = var.sql_admin_pass

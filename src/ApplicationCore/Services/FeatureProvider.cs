@@ -14,10 +14,18 @@ public class FeatureProvider : IFeatureProvider
     }
 
     public bool IsOrderReserverEnabled => _featuresConfiguration.OrderReserveEnabled;
-    public string OrderReserverTopicEndpoint => GetRequiredUri(_featuresConfiguration.OrderReserveTopicEnpoint, nameof(FeaturesConfiguration.OrderReserveTopicEnpoint));
+    public string OrderReserverTopicEndpoint => GetRequiredUri(_featuresConfiguration.OrderReserveEventGridTopicEnpoint, nameof(FeaturesConfiguration.OrderReserveEventGridTopicEnpoint));
 
     public bool IsOrderDeliveryEnabled => _featuresConfiguration.OrderDeliveryEnabled;
     public string OrderDeliveryUri => GetRequiredUri(_featuresConfiguration.OrderDeliveryUrl, nameof(FeaturesConfiguration.OrderDeliveryUrl));
+
+    public string AzureServiceBusFullNamespace => string.IsNullOrEmpty(_featuresConfiguration.AzureServiceBusFullNamespace)
+        ? throw new NullReferenceException($"Config value '{nameof(FeaturesConfiguration.AzureServiceBusFullNamespace)}' is not defined")
+        : _featuresConfiguration.AzureServiceBusFullNamespace;
+
+    public string OrderReserverQueueName => string.IsNullOrEmpty(_featuresConfiguration.OrderReserverQueueName)
+        ? throw new NullReferenceException($"Config value '{nameof(FeaturesConfiguration.OrderReserverQueueName)}' is not defined")
+        : _featuresConfiguration.OrderReserverQueueName;
 
     private static string GetRequiredUri(string? url, string settingName)
         => string.IsNullOrEmpty(url)
