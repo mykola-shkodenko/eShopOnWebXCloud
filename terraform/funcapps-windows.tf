@@ -40,7 +40,7 @@ resource "azurerm_windows_function_app" "func-app" {
   app_settings = {
     APPINSIGHTS_INSTRUMENTATIONKEY         = azurerm_application_insights.funcapp.instrumentation_key
     APPLICATIONINSIGHTS_CONNECTION_STRING  = azurerm_application_insights.funcapp.connection_string
-    WEBSITE_RUN_FROM_PACKAGE               = 1
+    # WEBSITE_RUN_FROM_PACKAGE               = 1
     ORDERS_CONTAINER_URL                   = "${azurerm_storage_account.st-acc.primary_blob_endpoint}orders"
     COSMOS_ENDPOINT                        = ""
     COSMOS_DATABASE                        = var.cosmos_db_name

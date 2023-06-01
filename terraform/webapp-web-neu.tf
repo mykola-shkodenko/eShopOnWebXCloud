@@ -51,13 +51,13 @@ resource "azurerm_windows_web_app" "web-neu" {
   connection_string {
     name  = "CatalogConnection"
     type  = "SQLServer"
-    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.kvs-db-connection.name})"
+    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${data.azurerm_key_vault_secret.db-connection.name})"
   }
 
   connection_string {
     name  = "IdentityConnection"
     type  = "SQLServer"
-    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.kvs-db-connection.name})"
+    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${data.azurerm_key_vault_secret.db-connection.name})"
   }
 
   logs {

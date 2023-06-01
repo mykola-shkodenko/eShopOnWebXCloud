@@ -11,19 +11,6 @@ resource "azurerm_container_registry" "acr" {
   }
 }
 
-# resource "azurerm_key_vault_secret" "kvs-acr-user" {
-#   name         = "acr-admin-name"
-#   value        = azurerm_container_registry.acr.admin_username
-#   key_vault_id = azurerm_key_vault.kv.id
-# }
-
-# resource "azurerm_key_vault_secret" "kvs-acr-pass" {
-#   name         = "acr-admin-pass"
-#   value        = azurerm_container_registry.acr.admin_password
-#   key_vault_id = azurerm_key_vault.kv.id
-# }
-
-
 resource "azurerm_service_plan" "asp-linux" {
   name                = "asp-linux-eshop-cloudx"
   resource_group_name = azurerm_resource_group.this.name
@@ -74,13 +61,13 @@ resource "azurerm_linux_web_app" "app-publicapi" {
   connection_string {
     name  = "CatalogConnection"
     type  = "SQLServer"
-    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.kvs-db-connection.name})"
+    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${data.azurerm_key_vault_secret.db-connection.name})"
   }
 
   connection_string {
     name  = "IdentityConnection"
     type  = "SQLServer"
-    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.kvs-db-connection.name})"
+    value = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${data.azurerm_key_vault_secret.db-connection.name})"
   }
 
   logs {

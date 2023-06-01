@@ -34,7 +34,12 @@ resource "azurerm_key_vault" "kv" {
 }
 
 resource "azurerm_key_vault_secret" "kvs-db-connection" {
-  name         = "db-connection-string"
+  name         = "eshop-sql-connection-string"
   value        = "Server=tcp:${azurerm_mssql_server.sql-server.name}.database.windows.net,1433;Initial Catalog=${azurerm_mssql_database.sql-db.name};Persist Security Info=False;User ID=${var.sql_admin};Password=${var.sql_admin_pass};MultipleActiveResultSets=True;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+  key_vault_id = azurerm_key_vault.kv.id
+}
+
+data "azurerm_key_vault_secret" "db-connection" {
+  name         = azurerm_key_vault_secret.kvs-db-connection.name
   key_vault_id = azurerm_key_vault.kv.id
 }
