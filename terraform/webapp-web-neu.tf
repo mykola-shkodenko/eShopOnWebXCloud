@@ -67,13 +67,6 @@ resource "azurerm_windows_web_app" "web-neu" {
   }
 }
 
-# resource "azurerm_windows_web_app_slot" "web-neu" {
-#   name           = "${azurerm_windows_web_app.web-neu.name}-slot"
-#   app_service_id = azurerm_windows_web_app.web-neu.id
-
-#   site_config {}
-# }
-
 # ----------- Web Access Policy & Role Assignments -----------
 data "azuread_service_principal" "web-neu" {
   display_name = azurerm_windows_web_app.web-neu.name
@@ -86,18 +79,7 @@ resource "azurerm_key_vault_access_policy" "web-neu" {
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = data.azuread_service_principal.web-neu.object_id
 
-  secret_permissions = [
-    "Get",
-    "List"
-  ]
-
-  certificate_permissions = [
-    "Get",
-    "List"
-  ]
-
-  key_permissions = [
-    "Get",
-    "List"
-  ]
+  secret_permissions = ["Get", "List" ]
+  certificate_permissions = [ "Get", "List" ]
+  key_permissions = [ "Get", "List" ]
 }

@@ -25,13 +25,6 @@ resource "azurerm_role_assignment" "storage-func-app" {
 }
 
 
-resource "azurerm_user_assigned_identity" "web" {
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-
-  name = "web-indetity"
-}
-
 # ----------- Logic App -----------
 
 # ----------- Second step teraform resources -----------

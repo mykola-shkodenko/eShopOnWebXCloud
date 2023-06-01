@@ -67,7 +67,7 @@ resource "azurerm_windows_web_app" "web-weu" {
   }
 }
 
-resource "azurerm_windows_web_app_slot" "web-weu" {
+resource "azurerm_windows_web_app_slot" "web-weu-slot" {
   name           = "slot"
   app_service_id = azurerm_windows_web_app.web-weu.id
 
@@ -121,20 +121,25 @@ resource "azurerm_key_vault_access_policy" "web-weu" {
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = data.azuread_service_principal.web-weu.object_id
 
-  secret_permissions = [
-    "Get",
-    "List"
-  ]
+  secret_permissions = ["Get", "List" ]
+  certificate_permissions = [ "Get", "List" ]
+  key_permissions = [ "Get", "List" ]
+}
 
-  certificate_permissions = [
-    "Get",
-    "List"
+data "azuread_service_principal" "web-weu-slot" {
+  display_name = "${azurerm_windows_web_app.web-weu.name}/slots/${azurerm_windows_web_app_slot.web-weu-slot.name}"
+  depends_on = [
+    azurerm_windows_web_app_slot.web-weu-slot
   ]
+}
+resource "azurerm_key_vault_access_policy" "web-weu-slot" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azuread_service_principal.web-weu-slot.object_id
 
-  key_permissions = [
-    "Get",
-    "List"
-  ]
+  secret_permissions = ["Get", "List" ]
+  certificate_permissions = [ "Get", "List" ]
+  key_permissions = [ "Get", "List" ]
 }
 
 # ------ 
