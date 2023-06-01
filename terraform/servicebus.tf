@@ -22,10 +22,10 @@ resource "azurerm_servicebus_queue" "order-reservation-failed" {
 
 # ----------- Role assignments -----------
 
-resource "azurerm_role_assignment" "servicebus-order-reservation-requested--web-eus" {
+resource "azurerm_role_assignment" "servicebus-order-reservation-requested--web-weu" {
   scope                = azurerm_servicebus_queue.order-reservation-requested.id
   role_definition_name = "Azure Service Bus Data Sender"
-  principal_id         = azurerm_windows_web_app.web-eus.identity[0].principal_id
+  principal_id         = azurerm_windows_web_app.web-weu.identity[0].principal_id
 }
 
 resource "azurerm_role_assignment" "servicebus-order-reservation-requested-web-nue" {

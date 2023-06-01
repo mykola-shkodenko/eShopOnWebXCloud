@@ -2,8 +2,8 @@ data "azurerm_client_config" "current" {}
 
 # Create a resource group
 resource "azurerm_resource_group" "this" {
-  name     = "rg-final-eus"
-  location = "East US"
+  name     = "rg-final-weu"
+  location = "West Europe"
   tags = {
     module = "final"
   }
@@ -11,7 +11,7 @@ resource "azurerm_resource_group" "this" {
 
 # Create storage account
 resource "azurerm_storage_account" "this" {
-  name                     = "steshopcloudx"
+  name                     = "storageeshopcloudx"
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
   account_tier             = "Standard"
@@ -22,6 +22,14 @@ resource "azurerm_role_assignment" "storage-func-app" {
   scope                = azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_windows_function_app.func-app.identity[0].principal_id
+}
+
+
+resource "azurerm_user_assigned_identity" "web" {
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+
+  name = "web-indetity"
 }
 
 # ----------- Logic App -----------

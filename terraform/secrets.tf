@@ -1,6 +1,6 @@
 # ----------- Key Valult -----------
 resource "azurerm_key_vault" "kv" {
-  name                        = "kv-eshop-cloudx"
+  name                        = "kv-final-eshop-cloudx"
   location                    = azurerm_resource_group.this.location
   resource_group_name         = azurerm_resource_group.this.name
   enabled_for_disk_encryption = true

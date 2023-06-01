@@ -19,10 +19,10 @@ resource "azurerm_traffic_manager_profile" "web" {
 }
 
 
-resource "azurerm_traffic_manager_azure_endpoint" "web-eus" {
+resource "azurerm_traffic_manager_azure_endpoint" "web-weu" {
   name               = "Web Eus"
   profile_id         = azurerm_traffic_manager_profile.web.id
-  target_resource_id = azurerm_windows_web_app.web-eus.id
+  target_resource_id = azurerm_windows_web_app.web-weu.id
   priority           = 1
   weight             = 1
 }

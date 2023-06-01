@@ -47,10 +47,10 @@ resource "azurerm_cosmosdb_sql_container" "orders" {
   throughput            = 400
 }
 
-resource "azurerm_role_assignment" "cosmos-web-eus" {
+resource "azurerm_role_assignment" "cosmos-web-weu" {
   scope                = azurerm_cosmosdb_account.this.id
   role_definition_name = "Cosmos DB Operator"
-  principal_id         = azurerm_windows_web_app.web-eus.identity.0.principal_id
+  principal_id         = azurerm_windows_web_app.web-weu.identity.0.principal_id
 }
 resource "azurerm_role_assignment" "cosmos-web-neu" {
   scope                = azurerm_cosmosdb_account.this.id

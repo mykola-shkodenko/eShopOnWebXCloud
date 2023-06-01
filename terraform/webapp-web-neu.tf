@@ -36,8 +36,8 @@ resource "azurerm_windows_web_app" "web-neu" {
   }
 
   app_settings = {
-    APPINSIGHTS_INSTRUMENTATIONKEY             = azurerm_application_insights.web-eus.instrumentation_key
-    APPLICATIONINSIGHTS_CONNECTION_STRING      = azurerm_application_insights.web-eus.connection_string
+    APPINSIGHTS_INSTRUMENTATIONKEY             = azurerm_application_insights.web-weu.instrumentation_key
+    APPLICATIONINSIGHTS_CONNECTION_STRING      = azurerm_application_insights.web-weu.connection_string
     ApplicationInsightsAgent_EXTENSION_VERSION = "~2"
     "baseUrls:apiBase"                         = "https://${var.app_publicapi_name}.azurewebsites.net/api/"
     "baseUrls:webBase"                         = "https://${var.app_web_name}.azurewebsites.net/"
@@ -67,12 +67,12 @@ resource "azurerm_windows_web_app" "web-neu" {
   }
 }
 
-resource "azurerm_windows_web_app_slot" "web-neu" {
-  name           = "${azurerm_windows_web_app.web-neu.name}-slot"
-  app_service_id = azurerm_windows_web_app.web-neu.id
+# resource "azurerm_windows_web_app_slot" "web-neu" {
+#   name           = "${azurerm_windows_web_app.web-neu.name}-slot"
+#   app_service_id = azurerm_windows_web_app.web-neu.id
 
-  site_config {}
-}
+#   site_config {}
+# }
 
 # ----------- Web Access Policy & Role Assignments -----------
 data "azuread_service_principal" "web-neu" {
