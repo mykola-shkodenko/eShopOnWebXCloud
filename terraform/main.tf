@@ -10,7 +10,7 @@ resource "azurerm_resource_group" "this" {
 }
 
 # Create storage account
-resource "azurerm_storage_account" "st-acc" {
+resource "azurerm_storage_account" "this" {
   name                     = "steshopcloudx"
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
@@ -18,8 +18,8 @@ resource "azurerm_storage_account" "st-acc" {
   account_replication_type = "LRS"
 }
 
-resource "azurerm_role_assignment" "ars-st-acc-func-app" {
-  scope                = azurerm_storage_account.st-acc.id
+resource "azurerm_role_assignment" "storage-func-app" {
+  scope                = azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_windows_function_app.func-app.identity[0].principal_id
 }

@@ -21,8 +21,8 @@ resource "azurerm_windows_function_app" "func-app" {
   name                       = var.func_app_name
   resource_group_name        = azurerm_resource_group.this.name
   location                   = azurerm_resource_group.this.location
-  storage_account_name       = azurerm_storage_account.st-acc.name
-  storage_account_access_key = azurerm_storage_account.st-acc.primary_access_key
+  storage_account_name       = azurerm_storage_account.this.name
+  storage_account_access_key = azurerm_storage_account.this.primary_access_key
   service_plan_id            = azurerm_service_plan.funcapp.id
 
   site_config {
@@ -41,7 +41,7 @@ resource "azurerm_windows_function_app" "func-app" {
     APPINSIGHTS_INSTRUMENTATIONKEY         = azurerm_application_insights.funcapp.instrumentation_key
     APPLICATIONINSIGHTS_CONNECTION_STRING  = azurerm_application_insights.funcapp.connection_string
     # WEBSITE_RUN_FROM_PACKAGE               = 1
-    ORDERS_CONTAINER_URL                   = "${azurerm_storage_account.st-acc.primary_blob_endpoint}orders"
+    ORDERS_CONTAINER_URL                   = "${azurerm_storage_account.this.primary_blob_endpoint}orders"
     COSMOS_ENDPOINT                        = ""
     COSMOS_DATABASE                        = var.cosmos_db_name
     COSMOS_ORDERS_CONTAINER                = var.cosmos_container_name_orders

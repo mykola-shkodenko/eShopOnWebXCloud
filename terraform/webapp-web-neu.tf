@@ -67,6 +67,13 @@ resource "azurerm_windows_web_app" "web-neu" {
   }
 }
 
+resource "azurerm_windows_web_app_slot" "web-neu" {
+  name           = "${azurerm_windows_web_app.web-neu.name}-slot"
+  app_service_id = azurerm_windows_web_app.web-neu.id
+
+  site_config {}
+}
+
 # ----------- Web Access Policy & Role Assignments -----------
 data "azuread_service_principal" "web-neu" {
   display_name = azurerm_windows_web_app.web-neu.name

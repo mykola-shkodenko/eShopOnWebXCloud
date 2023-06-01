@@ -67,6 +67,13 @@ resource "azurerm_windows_web_app" "web-eus" {
   }
 }
 
+resource "azurerm_windows_web_app_slot" "web-eus" {
+  name           = "${azurerm_windows_web_app.web-eus.name}-slot"
+  app_service_id = azurerm_windows_web_app.web-eus.id
+
+  site_config {}
+}
+
 # ----------- Web Access Policy & Role Assignments -----------
 data "azuread_service_principal" "web-eus" {
   display_name = azurerm_windows_web_app.web-eus.name
@@ -93,4 +100,56 @@ resource "azurerm_key_vault_access_policy" "web-eus" {
     "Get",
     "List"
   ]
+}
+
+# ------ 
+resource "azurerm_monitor_autoscale_setting" "windows-eus" {
+  name                = "Web Eus Autoscale Setting"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  target_resource_id  = azurerm_service_plan.windows-eus.id
+  profile {
+    name = "default"
+    capacity {
+      default = 1
+      minimum = 1
+      maximum = 5
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.windows-eus.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "GreaterThan"
+        threshold          = 90
+      }
+      scale_action {
+        direction = "Increase"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+    rule {
+      metric_trigger {
+        metric_name        = "CpuPercentage"
+        metric_resource_id = azurerm_service_plan.windows-eus.id
+        time_grain         = "PT1M"
+        statistic          = "Average"
+        time_window        = "PT5M"
+        time_aggregation   = "Average"
+        operator           = "LessThan"
+        threshold          = 10
+      }
+      scale_action {
+        direction = "Decrease"
+        type      = "ChangeCount"
+        value     = "1"
+        cooldown  = "PT1M"
+      }
+    }
+  }  
 }
