@@ -19,6 +19,10 @@ resource "azurerm_servicebus_queue" "order-reservation-failed" {
   enable_partitioning = true
 }
 
+data "azurerm_servicebus_namespace" "this" {
+  name                = azurerm_servicebus_namespace.this.name
+  resource_group_name = azurerm_resource_group.this.name
+}
 
 # ----------- Role assignments -----------
 

@@ -1,4 +1,4 @@
-﻿/*using System.Text.Json;
+﻿using System.Text.Json;
 using Azure.Core.Serialization;
 using Azure.Identity;
 using Azure.Messaging.EventGrid;
@@ -10,16 +10,16 @@ using Polly.Retry;
 
 namespace Microsoft.eShopWeb.AzureFunctions;
 
-public class OrderItemsReserver
+public class EventGridOrderItemsReserver
 {
     private readonly ILogger _logger;
 
-    public OrderItemsReserver(ILoggerFactory loggerFactory)
+    public EventGridOrderItemsReserver(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<OrderItemsReserver>();
+        _logger = loggerFactory.CreateLogger<EventGridOrderItemsReserver>();
     }
 
-    [Function(nameof(OrderItemsReserver))]
+    //[Function(nameof(OrderItemsReserver))]
     public async Task Run([EventGridTrigger()] EventGridEvent @event)
     {
         _logger.LogInformation("C# EventGrid trigger function processed a request.");
@@ -38,7 +38,7 @@ public class OrderItemsReserver
         {
             throw new NullReferenceException("Deserialized event data is null");
         }
-        
+
         await CreateBlobWithRetryAsync(data);
 
         _logger.LogInformation($"Order {data.OrderId} has been reserved successfully");
@@ -68,7 +68,7 @@ public class OrderItemsReserver
 
             _logger.LogInformation($"Blob '{blobName}' has been uploaded to container '{containerClient.Name}'");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, $"Order blob was not created for reason: {ex.Message}");
 
@@ -101,7 +101,7 @@ public class OrderItemsReserver
 
         _logger.LogInformation($"Event for failed order {order.OrderId} has been send");
     }
-    
+
     internal class OrderFailedEvent : EventGridEvent
     {
         public OrderFailedEvent(string subject, BinaryData data)
@@ -120,4 +120,4 @@ public class OrderItemsReserver
 
     public record OrderItem(int ItemId, int Quantity);
 }
-*/
+

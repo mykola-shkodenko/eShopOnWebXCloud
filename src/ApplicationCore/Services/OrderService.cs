@@ -97,18 +97,24 @@ public class OrderService : IOrderService
                 order.ShipToAddress.ZipCode
             }
         };
-        var result = await PostAsync(_featureProvider.OrderDeliveryUri, body);
+        var result = await PostAsync(_featureProvider.OrderDeliveryUri, body, $"Order Id = {order.Id}");
         if (!result.IsSuccessStatusCode)
             throw new Exception($"Order '{order.Id}' was delivered with error '{result.StatusCode}' and message '{await result.Content.ReadAsStringAsync()}'");
 
         _logger.LogInformation($"Order '{order.Id}' has been send to order delivery service");
     }
 
-    private static async Task<HttpResponseMessage> PostAsync(string uri, object body)
+    private async Task<HttpResponseMessage> PostAsync(string uri, object body, string key)
     {
+        _logger.LogInformation($"Posting data {key} to URL: {uri}");
+
         var json = JsonSerializer.Serialize(body);
         var stringContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
         var httpClient = new HttpClient();
-        return await httpClient.PostAsync(uri, stringContent);
+        var result = await httpClient.PostAsync(uri, stringContent);
+
+        _logger.LogInformation($"Posted data {key} to URL: {uri}");
+
+        return result;
     }
 }

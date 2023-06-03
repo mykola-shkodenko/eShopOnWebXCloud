@@ -12,7 +12,7 @@ namespace Microsoft.eShopWeb.AzureFunctions;
 public class OrderItemsReserver
 {
     private const string ServiceBusFullNamespaceKey = "AZURE_SERVICEBUS_FULL_NAMEPACE";
-    private const string ServiceBusRequestedQueueKey = "%AZURE_SERVICEBUS_ORDER_REQUESTED_QUEUE%";
+    //private const string ServiceBusRequestedQueueKey = "%AZURE_SERVICEBUS_ORDER_REQUESTED_QUEUE%";
     private const string ServiceBusFailedQueueKey = "AZURE_SERVICEBUS_ORDER_FAILED_QUEUE";
 
     private readonly ILogger _logger;
@@ -24,8 +24,8 @@ public class OrderItemsReserver
 
     [Function(nameof(OrderItemsReserver))]
     public async Task Run([ServiceBusTrigger(
-        queueName: ServiceBusRequestedQueueKey,
-        Connection = ServiceBusFullNamespaceKey)] byte[] message)
+        queueName: "sbq-order-reservation-requested")] // Connection AzureWebJobsServiceBus
+        byte[] message)
     {
         _logger.LogInformation("C# EventGrid trigger function processed a request.");
 
