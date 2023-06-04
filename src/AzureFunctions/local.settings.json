@@ -9,6 +9,7 @@
         "COSMOS_ORDERS_CONTAINER": "orders",
         //"EVENTGRID_ORDER_FAILED_TOPIC_ENDPOINT": ""
         //"AZURE_SERVICEBUS_ORDER_REQUESTED_QUEUE": "",
+        "ServiceBusConnection__fullyQualifiedNamespace": "",
         "AZURE_SERVICEBUS_ORDER_FAILED_QUEUE": ""
     }
 }

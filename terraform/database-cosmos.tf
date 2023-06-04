@@ -77,27 +77,44 @@ resource "azurerm_cosmosdb_sql_container" "orders" {
 #   scope               = azurerm_cosmosdb_account.this.id
 # }
 
-resource "azurerm_cosmosdb_sql_role_definition" "contributor" {
-  name                = "Cosmos DB Contributor"
-  resource_group_name = azurerm_resource_group.this.name
-  account_name        = azurerm_cosmosdb_account.this.name
-  type                = "CustomRole"
-  assignable_scopes   = [azurerm_cosmosdb_account.this.id]
+# resource "azurerm_cosmosdb_sql_role_definition" "contributor" {
+#   name                = "Cosmos DB Contributor"
+#   resource_group_name = azurerm_resource_group.this.name
+#   account_name        = azurerm_cosmosdb_account.this.name
+#   type                = "CustomRole"
+#   assignable_scopes   = [azurerm_cosmosdb_account.this.id]
 
-  permissions {
-    data_actions = [
-      "Microsoft.DocumentDB/databaseAccounts/readMetadata",
-      "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*",
-      "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*"
-      ]
-  }
-}
+#   permissions {
+#     data_actions = [
+#       "Microsoft.DocumentDB/databaseAccounts/readMetadata",
+#       "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*",
+#       "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*"
+#       ]
+#   }
+# }
 
-resource "azurerm_cosmosdb_sql_role_assignment" "cosmos-contributor-funcs" {
-  name                = "736180af-7fbc-4c7f-9004-22735173c1c3"
+# resource "azurerm_cosmosdb_sql_role_assignment" "cosmos-contributor-current" {
+#   resource_group_name = azurerm_resource_group.this.name
+#   account_name        = azurerm_cosmosdb_account.this.name
+#   role_definition_id  = azurerm_cosmosdb_sql_role_definition.contributor.id
+#   principal_id        = data.azurerm_client_config.current.object_id
+#   scope               = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.DocumentDB/databaseAccounts/${azurerm_cosmosdb_account.this.name}"
+# }
+
+# resource "azurerm_cosmosdb_sql_role_assignment" "cosmos-db-data-contributor" {
+#   resource_group_name = azurerm_resource_group.this.name
+#   account_name        = azurerm_cosmosdb_account.this.name  
+#   role_definition_id  = "${azurerm_cosmosdb_account.this.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
+#   principal_id        =  data.azurerm_client_config.current.object_id
+#   scope               = azurerm_cosmosdb_account.this.id
+# }
+
+resource "azurerm_cosmosdb_sql_role_assignment" "cosmos-db-data-contributor" {
   resource_group_name = azurerm_resource_group.this.name
-  account_name        = azurerm_cosmosdb_account.this.name
-  role_definition_id  = azurerm_cosmosdb_sql_role_definition.contributor.id
-  principal_id        = azurerm_windows_function_app.func-app.identity.0.principal_id
+  account_name        = azurerm_cosmosdb_account.this.name  
   scope               = azurerm_cosmosdb_account.this.id
+  role_definition_id  = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${azurerm_resource_group.this.name}/providers/Microsoft.DocumentDB/databaseAccounts/${azurerm_cosmosdb_account.this.name}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
+  principal_id        =  azurerm_windows_function_app.func-app.identity.0.principal_id
+  
 }
+

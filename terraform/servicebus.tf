@@ -39,7 +39,7 @@ resource "azurerm_role_assignment" "servicebus-order-reservation-requested-web-n
 }
 
 resource "azurerm_role_assignment" "servicebus-order-reservation-requested-func-app" {
-  scope                = azurerm_servicebus_queue.order-reservation-failed.id
+  scope                = azurerm_servicebus_queue.order-reservation-requested.id
   role_definition_name = "Azure Service Bus Data Receiver"
   principal_id         = azurerm_windows_function_app.func-app.identity[0].principal_id
 }

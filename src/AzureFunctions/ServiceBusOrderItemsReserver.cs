@@ -11,7 +11,8 @@ namespace Microsoft.eShopWeb.AzureFunctions;
 
 public class OrderItemsReserver
 {
-    private const string ServiceBusFullNamespaceKey = "AZURE_SERVICEBUS_FULL_NAMEPACE";
+    private const string ServiceBusName = "ServiceBusConnection";
+    private const string ServiceBusFullNamespaceKey = $"{ServiceBusName}__fullyQualifiedNamespace";
     //private const string ServiceBusRequestedQueueKey = "%AZURE_SERVICEBUS_ORDER_REQUESTED_QUEUE%";
     private const string ServiceBusFailedQueueKey = "AZURE_SERVICEBUS_ORDER_FAILED_QUEUE";
 
@@ -24,10 +25,11 @@ public class OrderItemsReserver
 
     [Function(nameof(OrderItemsReserver))]
     public async Task Run([ServiceBusTrigger(
-        queueName: "sbq-order-reservation-requested")] // Connection AzureWebJobsServiceBus
+        queueName: "sbq-order-reservation-requested",
+        Connection = ServiceBusName)] // Connection AzureWebJobsServiceBus
         byte[] message)
     {
-        _logger.LogInformation("C# EventGrid trigger function processed a request.");
+        _logger.LogInformation("C# ServiceBus trigger function processed a request.");
 
         using MemoryStream stream = new MemoryStream(message);
 
@@ -51,6 +53,8 @@ public class OrderItemsReserver
     {
         try
         {
+            _logger.LogInformation("Creating blob with order details {OrderId}", order.OrderId);
+            
             string blobName = $"Order_{order.OrderId}_{order.OrderItems?.Count()}_{order.OrderItems?.Sum(i => i.Quantity)}.json";
 
             var containerStorageUrl = GetVariable("ORDERS_CONTAINER_URL");
@@ -69,11 +73,11 @@ public class OrderItemsReserver
             memoryStream.Position = 0;
             await blobClient.UploadAsync(memoryStream);
 
-            _logger.LogInformation($"Blob '{blobName}' has been uploaded to container '{containerClient.Name}'");
+            _logger.LogInformation("Blob '{BlobName}' has been uploaded to container '{ContainerClientName}'", blobName, containerClient.Name);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, $"Order blob was not created for reason: {ex.Message}");
+            _logger.LogError(ex, "Order blob was not created for reason: {Message}", ex.Message);
 
             await SendOrderFailedEventAsync(order);
         }
@@ -81,7 +85,7 @@ public class OrderItemsReserver
 
     private async Task SendOrderFailedEventAsync(ReservedOrder order)
     {
-
+        _logger.LogInformation("Sending message with failed order {OrderId}", order.OrderId);
         // Example of a custom ObjectSerializer used to serialize the event payload to JSON
         var customSerializer = new JsonObjectSerializer(new JsonSerializerOptions()
         {
@@ -92,10 +96,10 @@ public class OrderItemsReserver
         {
             TransportType = ServiceBusTransportType.AmqpWebSockets
         };
-        var serviceBusNmespace = GetVariable(ServiceBusFullNamespaceKey);
+        var serviceBusNamespace = GetVariable(ServiceBusFullNamespaceKey);
         var failedQueueName = GetVariable(ServiceBusFailedQueueKey);
 
-        var client = new ServiceBusClient(serviceBusNmespace, new DefaultAzureCredential(),clientOptions);
+        var client = new ServiceBusClient(serviceBusNamespace, new DefaultAzureCredential(),clientOptions);
         var sender = client.CreateSender(failedQueueName);
 
         // create a batch 
@@ -121,7 +125,7 @@ public class OrderItemsReserver
             await client.DisposeAsync();
         }
 
-        _logger.LogInformation($"Event for failed order {order.OrderId} has been send");
+        _logger.LogInformation("Message with failed order {OrderOrderId} has been send", order.OrderId);
     }
         
     private static string GetVariable(string key) => Environment.GetEnvironmentVariable(key)!;

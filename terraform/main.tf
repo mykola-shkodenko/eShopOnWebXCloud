@@ -11,7 +11,7 @@ resource "azurerm_resource_group" "this" {
 
 # Create storage account
 resource "azurerm_storage_account" "this" {
-  name                     = "storageeshopcloudx"
+  name                     = "stacceshopcloudx"
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
   account_tier             = "Standard"
@@ -22,6 +22,11 @@ resource "azurerm_role_assignment" "storage-func-app" {
   scope                = azurerm_storage_account.this.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_windows_function_app.func-app.identity[0].principal_id
+
+  depends_on = [
+    azurerm_storage_account.this,
+    azurerm_windows_function_app.func-app
+    ]
 }
 
 
