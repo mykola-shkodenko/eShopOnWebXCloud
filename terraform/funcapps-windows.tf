@@ -44,11 +44,8 @@ resource "azurerm_windows_function_app" "func-app" {
     ORDERS_CONTAINER_URL                   = "${azurerm_storage_account.this.primary_blob_endpoint}orders"
     COSMOS_ENDPOINT                        = data.azurerm_cosmosdb_account.this.endpoint
     COSMOS_DATABASE                        = var.cosmos_db_name
-    COSMOS_ORDERS_CONTAINER                = var.cosmos_container_name_orders
-    #AZURE_SERVICEBUS_FULL_NAMEPACE         = "${azurerm_servicebus_namespace.this.name}.servicebus.windows.net"
-    #AzureWebJobsServiceBus                 = azurerm_servicebus_namespace.this.endpoint
-    AzureWebJobsServiceBus                 = "${azurerm_servicebus_namespace.this.name}.servicebus.windows.net"
-    # AZURE_SERVICEBUS_ORDER_REQUESTED_QUEUE = azurerm_servicebus_queue.order-reservation-requested.name
+    COSMOS_ORDERS_CONTAINER                = var.cosmos_container_name_orders    
+    ServiceBusConnection__fullyQualifiedNamespace = "${azurerm_servicebus_namespace.this.name}.servicebus.windows.net"
     AZURE_SERVICEBUS_ORDER_FAILED_QUEUE    = azurerm_servicebus_queue.order-reservation-failed.name
 
   }
